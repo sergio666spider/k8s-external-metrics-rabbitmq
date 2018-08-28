@@ -1,2 +1,8 @@
-# k8s-external-metrics-rabbitmq
-Using Kubernetes, it creates a Horizontal Pod Autoscaling(HPA)
+# Sample API Server
+
+This is a sample of how to write a custom metrics API server using this
+library.  See the [README](/README.md) and [getting started
+guide](/docs/getting-started.md) for more information.
+
+The main entrypoint lives in [main.go](main.go), while the provider
+implementations live in [provider/provider.go](provider/provider.go).
