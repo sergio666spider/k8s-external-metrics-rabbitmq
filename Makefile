@@ -1,16 +1,16 @@
 REGISTRY?=kubernetes-incubator
-IMAGE?=k8s-custom-metric-adapter-sample
+IMAGE?=k8s-external-metric-adapter-rabbitmq
 TEMP_DIR:=$(shell mktemp -d)
 ARCH?=amd64
 OUT_DIR?=./_output
 
 VERSION?=latest
 
-.PHONY: all build-sample test verify-gofmt gofmt verify sample-container
+.PHONY: all build-rabbitmq test verify-gofmt gofmt verify rabbitmq-container
 
-all: build-sample
-build-sample: vendor
-	CGO_ENABLED=0 GOARCH=$(ARCH) go build -o $(OUT_DIR)/$(ARCH)/sample-adapter github.com/kubernetes-incubator/custom-metrics-apiserver/sample
+all: build-rabbitmq
+build-rabbitmq: vendor
+	CGO_ENABLED=0 GOARCH=$(ARCH) go build -o $(OUT_DIR)/$(ARCH)/rabbitmq-adapter github.com/sergio666spider/k8s-external-metrics-rabbitmq
 
 vendor: glide.lock
 	glide install -v
@@ -26,10 +26,10 @@ gofmt:
 
 verify: verify-gofmt test
 
-sample-container: build-sample
-	cp sample-deploy/Dockerfile $(TEMP_DIR)
-	cp $(OUT_DIR)/$(ARCH)/sample-adapter $(TEMP_DIR)/adapter
+rabbitmq-container: build-rabbitmq
+	cp deploy/Dockerfile $(TEMP_DIR)
+	cp $(OUT_DIR)/$(ARCH)/rabbitmq-adapter $(TEMP_DIR)/adapter
 	cd $(TEMP_DIR) && sed -i "s|BASEIMAGE|scratch|g" Dockerfile
-	sed -i 's|REGISTRY|'${REGISTRY}'|g' sample-deploy/manifests/custom-metrics-apiserver-deployment.yaml
+	sed -i 's|REGISTRY|'${REGISTRY}'|g' deploy/manifests/custom-metrics-apiserver-deployment.yaml
 	docker build -t $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION) $(TEMP_DIR)
 	rm -rf $(TEMP_DIR)
