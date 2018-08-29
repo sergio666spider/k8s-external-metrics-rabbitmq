@@ -59,12 +59,20 @@ type externalMetric struct {
 	value  external_metrics.ExternalMetricValue
 }
 
-type testingProvider struct {
-	client dynamic.Interface
-	mapper apimeta.RESTMapper
-
+type RabbitmqProvider struct {
+	client          dynamic.Interface
+	mapper          apimeta.RESTMapper
 	values          map[provider.CustomMetricInfo]int64
 	externalMetrics []externalMetric
+}
+
+func NewRabbitmqProvider(client dynamic.Interface, mapper apimeta.RESTMapper) provider.MetricsProvider {
+	return &RabbitmqProvider{
+		client:          client,
+		mapper:          mapper,
+		values:          make(map[provider.CustomMetricInfo]int64),
+		externalMetrics: testingMetrics,
+	}
 }
 
 var (
@@ -147,16 +155,7 @@ func getQueueMessagesValue() int64 {
 	return messagesValue
 }
 
-func NewFakeProvider(client dynamic.Interface, mapper apimeta.RESTMapper) provider.MetricsProvider {
-	return &testingProvider{
-		client:          client,
-		mapper:          mapper,
-		values:          make(map[provider.CustomMetricInfo]int64),
-		externalMetrics: testingMetrics,
-	}
-}
-
-func (p *testingProvider) valueFor(info provider.CustomMetricInfo) (int64, error) {
+func (p *RabbitmqProvider) valueFor(info provider.CustomMetricInfo) (int64, error) {
 	info, _, err := info.Normalized(p.mapper)
 	if err != nil {
 		return 0, err
@@ -188,7 +187,7 @@ func (p *testingProvider) valueFor(info provider.CustomMetricInfo) (int64, error
 	return value, nil
 }
 
-func (p *testingProvider) metricFor(value int64, name types.NamespacedName, info provider.CustomMetricInfo) (*custom_metrics.MetricValue, error) {
+func (p *RabbitmqProvider) metricFor(value int64, name types.NamespacedName, info provider.CustomMetricInfo) (*custom_metrics.MetricValue, error) {
 	objRef, err := helpers.ReferenceFor(p.mapper, name, info)
 	if err != nil {
 		return nil, err
@@ -202,7 +201,7 @@ func (p *testingProvider) metricFor(value int64, name types.NamespacedName, info
 	}, nil
 }
 
-func (p *testingProvider) metricsFor(totalValue int64, namespace string, selector labels.Selector, info provider.CustomMetricInfo) (*custom_metrics.MetricValueList, error) {
+func (p *RabbitmqProvider) metricsFor(totalValue int64, namespace string, selector labels.Selector, info provider.CustomMetricInfo) (*custom_metrics.MetricValueList, error) {
 	names, err := helpers.ListObjectNames(p.mapper, p.client, namespace, selector, info)
 	if err != nil {
 		return nil, err
@@ -222,7 +221,7 @@ func (p *testingProvider) metricsFor(totalValue int64, namespace string, selecto
 	}, nil
 }
 
-func (p *testingProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo) (*custom_metrics.MetricValue, error) {
+func (p *RabbitmqProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo) (*custom_metrics.MetricValue, error) {
 	value, err := p.valueFor(info)
 	if err != nil {
 		return nil, err
@@ -230,7 +229,7 @@ func (p *testingProvider) GetMetricByName(name types.NamespacedName, info provid
 	return p.metricFor(value, name, info)
 }
 
-func (p *testingProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo) (*custom_metrics.MetricValueList, error) {
+func (p *RabbitmqProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo) (*custom_metrics.MetricValueList, error) {
 	totalValue, err := p.valueFor(info)
 	if err != nil {
 		return nil, err
@@ -239,7 +238,7 @@ func (p *testingProvider) GetMetricBySelector(namespace string, selector labels.
 	return p.metricsFor(totalValue, namespace, selector, info)
 }
 
-func (p *testingProvider) ListAllMetrics() []provider.CustomMetricInfo {
+func (p *RabbitmqProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	// TODO: maybe dynamically generate this?
 	return []provider.CustomMetricInfo{
 		// these are mostly arbitrary examples
@@ -260,7 +259,7 @@ func (p *testingProvider) ListAllMetrics() []provider.CustomMetricInfo {
 		},
 	}
 }
-func (p *testingProvider) GetExternalMetric(namespace string, metricSelector labels.Selector, info provider.ExternalMetricInfo) (*external_metrics.ExternalMetricValueList, error) {
+func (p *RabbitmqProvider) GetExternalMetric(namespace string, metricSelector labels.Selector, info provider.ExternalMetricInfo) (*external_metrics.ExternalMetricValueList, error) {
 	matchingMetrics := []external_metrics.ExternalMetricValue{}
 	for _, metric := range p.externalMetrics {
 		if metric.info.Metric == info.Metric && metricSelector.Matches(labels.Set(metric.labels)) {
@@ -277,7 +276,7 @@ func (p *testingProvider) GetExternalMetric(namespace string, metricSelector lab
 	}, nil
 }
 
-func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
+func (p *RabbitmqProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	externalMetricsInfo := []provider.ExternalMetricInfo{}
 	for _, metric := range p.externalMetrics {
 		externalMetricsInfo = append(externalMetricsInfo, metric.info)
