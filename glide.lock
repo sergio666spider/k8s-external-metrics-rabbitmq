@@ -1,12 +1,5 @@
-hash: 513625ec1c1b29342e9ca475f49c32722e0952c98b69d52534d2c44e134bdd44
-updated: 2018-08-28T15:31:19.25439232-03:00
-imports:
-- name: github.com/kubernetes-incubator/custom-metrics-apiserver
-  version: 1f1cda41a301080789507a291b999807002ede46
-testImports: []
-
 hash: 7abe959d10d6e0f3642bda9ea8c380d882933c0c9645dd13955253faf9b1118b
-updated: 2018-08-25T22:25:14.99784445Z
+updated: 2018-06-25T16:34:00.593382031-04:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -159,6 +152,8 @@ imports:
   - simplelru
 - name: github.com/imdario/mergo
   version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/json-iterator/go
   version: f2b4162afba35581b6d4a50d3b8f34e33c144682
 - name: github.com/mailru/easyjson
@@ -576,7 +571,6 @@ imports:
   - plugin/pkg/client/auth/exec
   - rest
   - rest/watch
-  - restmapper
   - testing
   - tools/auth
   - tools/cache

@@ -1,7 +1,5 @@
-package: github.com/sergio666spider/k8s-external-metrics-rabbitmq
+package: github.com/kubernetes-incubator/custom-metrics-apiserver
 import:
-- package: github.com/kubernetes-incubator/custom-metrics-apiserver
-
 - package: github.com/emicklei/go-restful
   version: 2.2.1  # close to kubernetes Godeps.json
 
@@ -32,7 +30,7 @@ import:
   - pkg/util/errors
   - pkg/util/wait
   - pkg/version
-  tag: kubernetes-1.11.2
+  tag: kubernetes-1.11.0-rc.1
 
 - package: k8s.io/apiserver
   subpackages:
@@ -46,7 +44,7 @@ import:
   - pkg/server
   - pkg/server/options
   - pkg/util/logs
-  tag: kubernetes-1.11.2
+  tag: kubernetes-1.11.0-rc.1
 
 - package: k8s.io/client-go
   subpackages:
@@ -59,7 +57,7 @@ import:
   - rest
   - testing
   - tools/clientcmd
-  tag: kubernetes-1.11.2
+  tag: kubernetes-1.11.0-rc.1
 
 - package: k8s.io/metrics
   subpackages:
@@ -67,7 +65,7 @@ import:
   - pkg/apis/custom_metrics/install
   - pkg/apis/external_metrics
   - pkg/apis/external_metrics/install
-  tag: kubernetes-1.11.2
+  tag: kubernetes-1.11.0-rc.1
 
 testImport:
 - package: github.com/stretchr/testify

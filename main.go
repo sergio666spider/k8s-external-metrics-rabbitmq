@@ -18,17 +18,15 @@ package main
 
 import (
 	"flag"
-	"net/http"
 	"os"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/util/logs"
 
-	fakeprov "sergio666spider/k8s-external-metrics-rabbitmq/pkg/provider"
-
 	basecmd "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
+	"github.com/sergio666spider/k8s-external-metrics-rabbitmq/tree/master/pkg/provider"
 )
 
 type SampleAdapter struct {
@@ -38,7 +36,7 @@ type SampleAdapter struct {
 	Message string
 }
 
-func (a *SampleAdapter) makeProviderOrDie() (provider.MetricsProvider, *restful.WebService) {
+func (a *SampleAdapter) makeProviderOrDie() provider.MetricsProvider {
 	client, err := a.DynamicClient()
 	if err != nil {
 		glog.Fatalf("unable to construct dynamic client: %v", err)
@@ -61,17 +59,11 @@ func main() {
 	cmd.Flags().AddGoFlagSet(flag.CommandLine) // make sure we get the glog flags
 	cmd.Flags().Parse(os.Args)
 
-	testProvider, webService := cmd.makeProviderOrDie()
-	cmd.WithCustomMetrics(testProvider)
-	cmd.WithExternalMetrics(testProvider)
+	provider := cmd.makeProviderOrDie()
+	cmd.WithCustomMetrics(provider)
+	cmd.WithExternalMetrics(provider)
 
 	glog.Infof(cmd.Message)
-	// Set up POST endpoint for writing fake metric values
-	restful.DefaultContainer.Add(webService)
-	go func() {
-		// Open port for POSTing fake metrics
-		glog.Fatal(http.ListenAndServe(":8080", nil))
-	}()
 	if err := cmd.Run(wait.NeverStop); err != nil {
 		glog.Fatalf("unable to run custom metrics adapter: %v", err)
 	}
